@@ -1,25 +1,18 @@
 <?php
-// Отправляем браузеру правильную кодировку,
-// файл index.php должен быть в кодировке UTF-8 без BOM.
 header('Content-Type: text/html; charset=UTF-8'); 
 
-// В суперглобальном массиве $_SERVER PHP сохраняет некторые заголовки запроса HTTP
-// и другие сведения о клиненте и сервере, например метод текущего запроса $_SERVER['REQUEST_METHOD'].
+
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-    // В суперглобальном массиве $_GET PHP хранит все параметры, переданные в текущем запросе через URL.
     if (!empty($_GET['save'])) {
-      // Если есть параметр save, то выводим сообщение пользователю.
       print('Спасибо, результаты сохранены.');
     }
-    include('form.php'); // Включаем содержимое файла form.php.
-    exit(); // Завершаем работу скрипта.
+    include('form.php');
+    exit();
 }
 
 $result;
 
-// Иначе, если запрос был методом POST, т.е. нужно проверить данные и сохранить их в XML-файл.
 try{
-    // Проверяем ошибки.
     $errors = FALSE;
     if (empty($_POST['field-name'])) {
         print('Заполните имя.<br/>');
@@ -41,10 +34,8 @@ try{
 
     
     if ($errors) {
-      // При наличии ошибок завершаем работу скрипта.
         exit();
     }
-    //передаем данные в переменные
     $name = $_POST['field-name'];
     $email = $_POST['field-email'];
     $dob = $_POST['field-date'];
@@ -53,23 +44,18 @@ try{
     $bio = $_POST['bio'];
     $che = $_POST['check-1'];
     
-    //Объединяет элементы массива в строку
     $sup= implode(",",$_POST['superpowers']);
 
-    //Представляет собой соединение между PHP и сервером базы данных.
     $conn = new PDO("mysql:host=localhost;dbname=u47473", 'u47473', '8848569', array(PDO::ATTR_PERSISTENT => true));
 
-    //Подготавливает инструкцию к выполнению и возвращает объект инструкции
-    $user = $conn->prepare("INSERT INTO form SET name = ?, email = ?, bith = ?, gender = ?, limbs = ?, bio = ?, box = ?");
+    $user = $conn->prepare("INSERT INTO form SET name = ?, email = ?, birth = ?, gender = ?,limbs = ?, bio = ?, box = ?");
 
-    //Запускает подготовленный запрос на выполнение
-    $user -> execute([$_POST['field-name'], $_POST['field-email'], date('Y-m-d', strtotime($_POST['field-date'])), $_POST['radio1'], $_POST['radio2'], $_POST['bio'], $_POST['che']]);
+    $user -> execute([$name, $email, date('d-m-y', strtotime($dob)),$gender,$limbs,$bio,$che]);
     $id_user = $conn->lastInsertId();
 
     $user1 = $conn->prepare("INSERT INTO super SET id = ?, super_name = ?");
     $user1 -> execute([$id_user, $sup]);
     $result = true;
-    //  user и user1 - это "дескриптор состояния".
 }
 catch(PDOException $e){
     print('Error : ' . $e->getMessage());
@@ -80,5 +66,4 @@ catch(PDOException $e){
 if ($result) {
   echo "Информация занесена в базу данных под ID №" . $id_user;
 }
-//print - выводит строку, а echo - 1 или больше строк
 ?>
